@@ -31,6 +31,8 @@ let snailWrongWay = [];
 
 let snailActive = [];
 
+let leaderboardY = [];
+
 
 
 function preload() {
@@ -97,7 +99,11 @@ function setup() {
     //  speed: 2
    // };
 
-  
+
+//animated leaderboard
+   for (let i = 0; i < numSnails; i++) {
+    leaderboardY.push(40 + i * 20); 
+  }
 
   video = createCapture(VIDEO);// Creat the video
   video.id("video");
@@ -393,8 +399,8 @@ function checkWinner() {
 
   function drawLeaderboard() {
     let rankings = snailEnds
-      .map((pos, i) => ({ name: snailNames[i], pos }))
-      .sort((a, b) => b.pos - a.pos); 
+      .map((pos, i) => ({ name: snailNames[i], pos, index: i }))
+      .sort((a, b) => b.pos - a.pos);
   
     fill(0);
     textSize(16);
@@ -402,7 +408,13 @@ function checkWinner() {
     text("Leaderboard:", width - 200, 20);
   
     for (let i = 0; i < rankings.length; i++) {
-      text(`${i + 1}. ${rankings[i].name}`, width - 200, 40 + i * 20);
+      let snailIndex = rankings[i].index;
+      let targetY = 40 + i * 20;
+  
+     
+      leaderboardY[snailIndex] = lerp(leaderboardY[snailIndex], targetY, 0.3);
+  
+      text(`${i + 1}. ${rankings[i].name}`, width - 200, leaderboardY[snailIndex]);
     }
   }
 
