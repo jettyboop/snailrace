@@ -337,7 +337,7 @@ function draw(){
         textSize(16);
         textAlign (LEFT, TOP)
         noStroke();
-        fill(0);
+        fill('red');
         text("nothing to see here...", 20, 20);
       }else{
         //If no faces is detected
@@ -381,7 +381,7 @@ function checkWinner() {
 
         setTimeout(() => {
           location.reload(); 
-        },8000);
+        },20000);
 
 
         }
