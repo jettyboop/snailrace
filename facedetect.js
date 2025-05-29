@@ -353,7 +353,7 @@ function draw(){
         //fill('blue');
         //text("SNAILS GO!", 20, 20);
         //moveSnails();
-      }
+    //  }
 
       //updateSnailRandom();
       drawSnails();
