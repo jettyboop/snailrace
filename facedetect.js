@@ -338,22 +338,22 @@ function draw(){
 
 
 //snails go and stop text
-    if(detections.length > 0){
-      //If at least 1 face is detected
-        textSize(16);
-        textAlign (LEFT, TOP)
-        noStroke();
-        fill('red');
-        text("nothing to see here...", 20, 20);
-      }else{
-        //If no faces is detected
-        textSize(16);
-        textAlign (LEFT, TOP)
-        noStroke();
-        fill('blue');
-        text("SNAILS GO!", 20, 20);
-        moveSnails();
-      }
+//    if(detections.length > 0){
+//      //If at least 1 face is detected
+//        textSize(16);
+//        textAlign (LEFT, TOP)
+//        noStroke();
+//        fill('red');
+//        text("nothing to see here...", 20, 20);
+//      }else{
+//        //If no faces is detected
+  //      textSize(16);
+   //     textAlign (LEFT, TOP)
+    //    noStroke();
+     //   fill('blue');
+     //   text("SNAILS GO!", 20, 20);
+      //  moveSnails();
+      //}
 
       //updateSnailRandom();
       drawSnails();
