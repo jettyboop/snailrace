@@ -263,7 +263,7 @@ function drawSnails() {
         snailEnds[i] +=move;
       
 
-      if (!snailWrongWay.includes(true) && snailEnds[i] > startLine + 300 && random() < 0.01) {
+      if (!snailWrongWay.includes(true) && snailEnds[i] > startLine + 300 && random() < 0.001) {
         snailWrongWay[i] = true;
 
       snailMessage = `${snailNames[i]} ${random(wrongWayMessages)}`;
@@ -272,7 +272,7 @@ function drawSnails() {
         }
 
    //SNAIL FLIP
-      if (!oneSnailFlip && snailEnds[i] > startLine + 200 && random() < 0.1) {
+      if (!oneSnailFlip && snailEnds[i] > startLine + 200 && random() < 0.001) {
       snailFlip[i] = true; 
       oneSnailFlip = true;
 
@@ -347,7 +347,6 @@ function draw(){
         fill('blue');
         text("SNAILS GO!", 20, 20);
         moveSnails();
-
       }
 
       //updateSnailRandom();
@@ -378,6 +377,13 @@ function checkWinner() {
         let msg = random(winCaptions); 
         text(`${snailNames[i]} ${msg}`, width/2, height/2);
         noLoop();
+
+
+        setTimeout(() => {
+          location.reload(); 
+        },8000);
+
+
         }
     }
 }
