@@ -1,4 +1,3 @@
-let faceapi;
 let detections = [];
 
 let video;
@@ -23,11 +22,15 @@ let oneSnailFlip = false;
 
 let snailWrongWay = [];
 
-//let snailRandom = [];
-//let snailRandomActive = false;
-//let snailRandomIndex = -1;
-//let snailRandomTrail = [];
-//let snailRandomEndX = -1;
+let snailRandom = [];
+let snailRandomActive = false;
+let snailRandomIndex = -1;
+let snailRandomTrail = [];
+let snailRandomEndX = -1;
+
+let snailEaten= [];
+let oneSnailEaten= false;
+
 
 let snailActive = [];
 
@@ -49,6 +52,12 @@ let flipMessages = [
   "tried to do gymnastics instead of racing."
 ];
 
+let eatenMessages = [
+  "{EATER} ate {VICTIM}",
+  "{EATER} was hungry and saw {VICTIM}",
+  "{VICTIM} is gone, {EATER}",
+];
+
 let wrongWayMessages = [
   "panicked and turned around.",
   "thought backwards was faster.",
@@ -56,11 +65,16 @@ let wrongWayMessages = [
   "raged quit and is going home to see its wife and kids."
 ];
 
-let randomMessages = [
+let randomSnailMessages = [
   "got bored and is wandering around.",
   "gave up racing and is exploring other pastures.",
   "forgot it's in a race.",
   "saw a butterfly and is trying to catch it."
+];
+
+let cannibalMessages = [
+  "{EATER} got hungry and ate {VICTIM}. RIP.",
+  "{EATER} ate {VICTIM}. RIP.",
 ];
 
 let winCaptions = [
@@ -70,6 +84,7 @@ let winCaptions = [
     "wasn't even trying and still won",
     "cheated but won"
 ];
+
 
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
@@ -89,15 +104,16 @@ function setup() {
     snailFlip.push(false);
     snailWrongWay.push(false);
     snailActive.push(true);
+    snailEaten.push(false);
     };
   
-//    snailRandom = {
-//      x: random(width),
-//      y: random(height),
-//      history: [],
-  //    angle: random(TWO_PI),
-    //  speed: 2
-   // };
+    snailRandom = {
+      x: random(width),
+      y: random(height),
+      history: [],
+      angle: random(TWO_PI),
+      speed: 1
+    };
 
 
 //animated leaderboard
@@ -168,98 +184,91 @@ function drawLandmarks(detections){
 
 //code edited and tweaked from https://editor.p5js.org/ratematica/sketches/WytTUH_wa
 
-function drawSnail(x,y,i) {
-push();
-translate(x,y);
+function drawSnail(x, y, i) {
+  if (snailEaten[i]) return; // invisible if eaten
 
-if (snailFlip[i]){
-   scale(1, -1);
-   image(snailImages[i], - 90,  - 150, 200, 200); 
-   scale(1, -1);
-   fill(0);
+  push();
+  translate(x, y);
+
+  if (snailFlip[i]) {
+    scale(1, -1);
+    image(snailImages[i], -90, -150, 200, 200);
+    scale(1, -1);
+    fill(0);
     textAlign(LEFT, CENTER);
-    text(snailNames[i],  90,  50);
-    
-  
- 
-} else {
+    text(snailNames[i], 90, 50);
+  } else if (snailWrongWay[i]) {
+    scale(-1, 1);
+    image(snailImages[i], -110, -100, 200, 200);
+    scale(-1, 1);
+    fill(0);
+    textAlign(LEFT, CENTER);
+    text(snailNames[i], 90, 50);
+  } else {
+    image(snailImages[i], -90, -100, 200, 200);
+    fill(0);
+    textAlign(LEFT, CENTER);
+    text(snailNames[i], 90, 50);
+  }
 
-if (snailWrongWay[i]){
-  scale(-1,1);
-  image(snailImages[i], -110, -100, 200, 200);
-  scale(-1,1);
-  fill(0);
-  textAlign(LEFT, CENTER);
-  text(snailNames[i], 90, 50);  
-}else {
-
-image(snailImages[i], - 90,- 100, 200, 200); 
-fill(0);
-textAlign(LEFT, CENTER);
-text(snailNames[i], 90, 50);  
-}
+  pop();
 }
 
-pop();
-}
 
 function drawSnails() {
 
-    for (let i = 0; i < numSnails; i++) {
-      let y = 150 + i * 150; //space between snails
+ for (let i = 0; i < numSnails; i++) {
+ let y = 150 + i * 150; //space between snails
 
+  let trailEnd = (!snailActive[i] && i === snailRandomIndex)
+  ? snailRandomEndX
+  : snailEnds[i];
+      
  //GREEN TRAIL
-    fill(0, 255, 0); 
-    noStroke();
-    rect(startLine, y + 20 , snailEnds[i] - startLine, 30); 
+ fill(0, 255, 0);
+ noStroke();
+ rect(startLine, y + 20, trailEnd - startLine, 30);
 
-
-
-    // 🟢 Draw green trail only if snail never went random
-    if (snailActive[i]) {
-      fill(0, 255, 0);
-      noStroke();
-      rect(startLine, y + 20, snailEnds[i] - startLine - 15, 30);
-    }
     
-    if (snailActive[i]) {
-      drawSnail(snailEnds[i], y, i);
-    }
+ if (snailActive[i] && !snailEaten[i] || i !== snailRandomIndex) {
+  drawSnail(snailEnds[i], y, i);
+}
     }
 }
 
   function moveSnails() { 
     for (let i = 0; i < numSnails; i++) { 
-//if (!snailRandomActive) {
-  //for (let j = 0; j < numSnails; j++) {
-    //if (
-      //snailEnds[j] > startLine + 250 && 
- //     !snailFlip[j] && 
-   //   !snailWrongWay[j] && 
-     // snailActive[j] &&
-      //random() < 0.005 
-    //) {
-    //  snailRandomIndex = j;
-    //  snailRandom.x = snailEnds[j];
-    //  snailRandom.y = 150 + j * 150;
-    //  snailRandom.history = [];
-    //  snailRandomActive = true;
-    //  snailActive[j] = false;
-     // snailRandomEndX = snailEnds[snailRandomIndex];
+if (!snailRandomActive) {
+  for (let j = 0; j < numSnails; j++) {
+    if (
+      snailEnds[j] > startLine + 250 && 
+      !snailFlip[j] && 
+      !snailWrongWay[j] && 
+      !snailEaten[i] &&
+      snailActive[j] &&
+      random() < 0.005 
+    ) {
+      snailActive[j] = false;
+      snailRandomIndex = j;
+      snailRandom.x = snailEnds[j];
+      snailRandom.y = 150 + j * 150;
+      snailRandom.history = [];
+      snailRandomActive = true;
+      snailRandomEndX = snailEnds[snailRandomIndex];
 
-      //snailRandom.angle = random(-PI / 6, PI / 6);
-      //snailRandom.baseAngle = snailRandom.angle;
+      snailRandom.angle = random(-PI / 6, PI / 6);
+      snailRandom.baseAngle = snailRandom.angle;
 
-      //snailMessage = `${snailNames[j]} forgot it's in a race.`;
-      //snailMessageTimer = 240;
-     // break;
-    //}
-  //}
-//}
+      snailMessage = `${snailNames[j]} ${random(randomSnailMessages)}`;
+      snailMessageTimer = 240;
+      break;
+    }
+  }
+}
      
   
     
-        if (!snailFlip[i]) {
+        if (!snailFlip[i] && !snailEaten[i]) {
       let move = random(snailSpeeds[i].min, snailSpeeds[i].max); //RANDOM SPEED 
     
   //SNAIL WRONG WAY
@@ -269,7 +278,7 @@ function drawSnails() {
         snailEnds[i] +=move;
       
 
-      if (!snailWrongWay.includes(true) && snailEnds[i] > startLine + 300 && random() < 0.001) {
+      if (!snailWrongWay.includes(true) && snailEnds[i] > startLine + 300 && random() < 0.001 && i !== snailRandomIndex) {
         snailWrongWay[i] = true;
 
       snailMessage = `${snailNames[i]} ${random(wrongWayMessages)}`;
@@ -277,57 +286,105 @@ function drawSnails() {
       }
         }
 
-   //SNAIL FLIP
-      if (!oneSnailFlip && snailEnds[i] > startLine + 200 && random() < 0.001) {
+//SNAIL FLIP
+      if (!oneSnailFlip && snailEnds[i] > startLine + 200 && random() < 0.001  && i !== snailRandomIndex) {
       snailFlip[i] = true; 
       oneSnailFlip = true;
 
       snailMessage = `${snailNames[i]} ${random(flipMessages)}`;
       snailMessageTimer = 240;
-    
+    }  
 
-         }  
+//SNAIL EATEN
+if (!oneSnailEaten && snailEnds[i] > startLine + 200 && random() < 0.001 && i !== snailRandomIndex) {
+
+  let victim = snailNames[i];
+
+  let allowedEaters = {
+    "gary": ["turbo", "steve"],
+    "turbo": ["gary", "steve"],
+    "steve": ["turbo", "escargot"],
+    "escargot": ["steve"]
+  };
+
+  let possibleEaters = allowedEaters[victim].filter(name => {
+    let index = snailNames.indexOf(name);
+    return !snailEaten[index];
+  });
+
+  if (possibleEaters.length > 0) {
+    let eater = random(possibleEaters);
+    let eaterIndex = snailNames.indexOf(eater);
+
+    snailEaten[i] = true;
+    oneSnailEaten = true;
+    snailActive[i] = false;
+
+    let messageTemplate = random(eatenMessages);
+    snailMessage = messageTemplate
+      .replace("{VICTIM}", victim)
+      .replace("{EATER}", eater);
+    snailMessageTimer = 240;
+  }
+}
+
+
+
         }  
     }
   }
   
   
-//function updateSnailRandom() {
+function updateSnailRandom() {
 
- //if (!snailRandomActive) {return;//
-  
- // if (detections.length === 0){
- // snailRandom.angle += random(-0.03, 0.03);
-//snailRandom.angle = constrain(snailRandom.angle, snailRandom.baseAngle - PI / 8, snailRandom.baseAngle + PI / 8);
+ if (!snailRandomActive) return;
 
-  //snailRandom.x += cos(snailRandom.angle) * snailRandom.speed;
-  //snailRandom.y += sin(snailRandom.angle) * snailRandom.speed;
+  if (detections.length === 0){
+  snailRandom.angle += random(-0.03, 0.03);
+snailRandom.angle = constrain(snailRandom.angle, snailRandom.baseAngle - PI / 8, snailRandom.baseAngle + PI / 8);
 
-  //let v = createVector(snailRandom.x, snailRandom.y);
+  snailRandom.x += cos(snailRandom.angle) * snailRandom.speed;
+  snailRandom.y += sin(snailRandom.angle) * snailRandom.speed;
 
-  //snailRandom.history.push(v);
-  //}
+  let v = createVector(snailRandom.x, snailRandom.y);
+
+  snailRandom.history.push(v);
+  }
 
 
   //trail
-  //noStroke();
-  //fill(0, 255, 0);
-  //for (let pos of snailRandom.history) {
-  //  rect(pos.x - 15, pos.y + 20, 30, 30); 
- // }
 
-  //image(snailImages[snailRandomIndex], snailRandom.x - 90, snailRandom.y - 100, 200, 200);
-  //fill(0);
-  //textAlign(LEFT, CENTER);
-  //text(snailNames[snailRandomIndex], snailRandom.x + 90, snailRandom.y + 50);
-//}
+  function updateSnailRandomTrailOnly() {
+    if (!snailRandomActive) return;
+
+  noStroke();
+  fill(0, 255, 0);
+  for (let pos of snailRandom.history) {
+    rect(pos.x - 15, pos.y + 20, 30, 30); 
+  }
+}
+
+  image(snailImages[snailRandomIndex], snailRandom.x - 90, snailRandom.y - 100, 200, 200);
+  fill(0);
+  textAlign(LEFT, CENTER);
+text(snailNames[snailRandomIndex], snailRandom.x + 90, snailRandom.y + 50);
+}
 
 
-
+function updateSnailRandomTrailOnly() {
+  if (!snailRandomActive) return;
+  noStroke();
+  fill(0, 255, 0);
+  for (let pos of snailRandom.history) {
+    rect(pos.x - 15, pos.y + 20, 30, 30); 
+  }
+}
 
 function draw(){
 
     clear(); 
+
+    updateSnailRandomTrailOnly();
 
     // Draw the start and finish lines.
     noStroke();
@@ -355,10 +412,11 @@ function draw(){
         moveSnails();
       }
 
-      //updateSnailRandom();
+    
       drawSnails();
-      drawLeaderboard(); 
+      updateSnailRandom();
       
+      drawLeaderboard(); 
       checkWinner(); 
 
     if (snailMessageTimer > 0) {
